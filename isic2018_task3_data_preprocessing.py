@@ -1,0 +1,186 @@
+# Data Preprocessing
+
+This notebook consists of different data preprocessing options that will be used to explore the best flow for the image classification task of diagnosis of skin lesions with multi-class classification through dermoscopic images.
+
+## Libraries Import
+"""
+
+import pandas as pd
+import numpy as np
+from google.colab import drive
+import keras
+from keras import layers
+import tensorflow as tf
+from sklearn.utils.class_weight import compute_class_weight
+from tensorflow.keras.applications.efficientnet import preprocess_input as enPP
+from tensorflow.keras.applications.resnet import preprocess_input as rnPP
+from tensorflow.keras.applications.inception_v3 import preprocess_input as inPP
+from tensorflow.keras.applications.densenet import preprocess_input as dnPP
+
+"""## Data Balancing"""
+
+class DataBalancer:
+
+  def __init__(self):
+    pass
+
+  def oversampler(self, target, df):
+    oversampled_groups = []
+
+    for label, group in df.groupby('label_encoded'):
+      # Calculate need for full copies and extra samples to reach target
+      copies = target // len(group)
+      extra_samples = target % len(group)
+
+      # Create full copies and extra samples, and concat them into a single df
+      duplicated = pd.concat([group] * copies)
+      sampled = group.sample(extra_samples, replace=True)
+      oversampled_group = pd.concat([duplicated, sampled])
+      oversampled_groups.append(oversampled_group)
+
+    df_oversampled = pd.concat(oversampled_groups).reset_index(drop=True)
+
+    return df_oversampled
+
+  def buildDS(self,df):
+    # Define base dataset
+    file_paths = df['img_path'].values
+    labels = df['label_encoded'].values
+    ds = tf.data.Dataset.from_tensor_slices((file_paths, labels))
+    return ds
+
+  def buildWeightedDS(self,df):
+    # Define base dataset
+    file_paths = df['img_path'].values
+    labels = df['label_encoded'].values
+    weights = df['sample_weights'].values
+    ds = tf.data.Dataset.from_tensor_slices((file_paths, labels, weights))
+    return ds
+
+  '''
+  Capture an x number of images from each class based on smallest class number,
+  followed by oversampling to generate a sufficient number of images for training.
+  '''
+  def minBalancing(self, df):
+    # Identify smallest count per category
+    smallest_count = df.value_counts("lesion_type").min()
+    # Sample based on smallest count
+    df = df.groupby('lesion_type').sample(n=smallest_count, random_state=42)
+
+    # Define base dataset
+    base_ds = self.buildDS(df)
+
+    # Perform oversampling (min 300 images per category)
+    target = 300
+    df_oversampled = self.oversampler(target, df)
+
+    # Define final dataset as base dataset + oversampled images
+    final_ds = self.buildDS(df_oversampled)
+
+    return df_oversampled, final_ds
+
+  '''
+  Based on class with highest number of records, oversample other classes to match.
+  '''
+  def maxBalancing(self, df):
+    # Identify largest count per category
+    largest_count = df.value_counts("lesion_type").max()
+
+    # Define base dataset
+    base_ds = self.buildDS(df)
+
+    # Perform oversampling (based on highest volume per category)
+    df_oversampled = self.oversampler(largest_count, df)
+
+    # Define final dataset as base dataset + oversampled images
+    final_ds = self.buildDS(df_oversampled)
+
+    return final_ds
+
+  '''
+  Calculate a weight for each class based on inverse frequency.
+  '''
+  def classWeightening(self, df):
+    # Get labels and calculate weights
+    labels = df['label_encoded'].values
+    class_weights = compute_class_weight(class_weight='balanced',
+                                         classes=np.unique(labels), y=labels)
+    class_weight_dict = dict(enumerate(class_weights))
+
+    # Map each record to it's correspondent weight based on class
+    weights = [class_weight_dict[label] for label in labels]
+    df['weights'] = weights
+
+    # Define weighted dataset
+    final_ds = self.buildWeightedDS(df)
+
+    return final_ds
+
+"""## Data Preparation
+
+This section includes image resizing, normalisation, data augmentation techniques and
+"""
+
+class DataPreparer:
+
+  def __init__(self):
+    pass
+
+  def labelPathMapper(self, df, dataset):
+    # Convert labels columns to a single column
+    lesion_types = ["MEL","NV","BCC","AKIEC","BKL","DF","VASC"]
+    df['lesion_type'] = df[lesion_types].idxmax(axis=1)
+    df = df.drop(columns=lesion_types)
+
+    # Encode categorical labels
+    label_lookup = {label: idx for idx, label in enumerate(df['lesion_type'].unique())}
+    df['label_encoded'] = df['lesion_type'].map(label_lookup)
+
+    # Create full drive path to each image
+    base_path = '/content/drive/MyDrive/Colab Notebooks/skin-cancer-project/datasets/'+dataset+'/images/'
+    df['img_path'] = base_path + df['image']+'.jpg'
+
+    return df
+
+  def imageResizer(self, path, label, height, width):
+    image = tf.io.read_file(path)
+    image_decode = tf.image.decode_jpeg(image, channels=3)
+    resize_image = tf.image.resize(image_decode, [height, width])
+    return resize_image,label
+
+  def pixelNormalizer(self, image,label):
+    normalized_image = tf.cast(image/255. , tf.float32)
+    return normalized_image,label
+
+  def randomAugmentation(self):
+
+    data_augmentation = tf.keras.Sequential([
+        layers.RandomFlip("horizontal_and_vertical"),
+        layers.RandomRotation(0.2),
+        layers.RandomTranslation(height_factor=0.1, width_factor=0.1),
+        layers.RandomShear(x_factor=0.2, y_factor=0.2),
+        ])
+
+    return data_augmentation
+
+"""## Models Requirements Processing"""
+
+class ModelSpecificProcessor:
+  def __init__(self):
+    pass
+
+  def efficientNetPrep(self, image, label):
+    preprocessed_image = enPP(image)
+    return preprocessed_image, label
+
+  def resNetPrep(self, image, label):
+    preprocessed_image = rnPP(image)
+    return preprocessed_image, label
+
+  def inceptionPrep(self, image, label):
+    preprocessed_image = inPP(image)
+    return preprocessed_image, label
+
+  def denseNetPrep(self, image, label):
+    preprocessed_image = dnPP(image)
+    return preprocessed_image, label
