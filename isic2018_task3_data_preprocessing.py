@@ -1,10 +1,11 @@
 # Data Preprocessing
 
-This notebook consists of different data preprocessing options that will be used to explore the best flow for the image classification task of diagnosis of skin lesions with multi-class classification through dermoscopic images.
+'''
+This notebook consists of different data preprocessing options that will be used to explore the best flow for the image classification task of diagnosis 
+of skin lesions with multi-class classification through dermoscopic images.
+'''
 
 ## Libraries Import
-"""
-
 import pandas as pd
 import numpy as np
 from google.colab import drive
@@ -17,7 +18,7 @@ from tensorflow.keras.applications.resnet import preprocess_input as rnPP
 from tensorflow.keras.applications.inception_v3 import preprocess_input as inPP
 from tensorflow.keras.applications.densenet import preprocess_input as dnPP
 
-"""## Data Balancing"""
+## Data Balancing
 
 class DataBalancer:
 
