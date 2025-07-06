@@ -19,8 +19,11 @@ from tensorflow.keras.applications import EfficientNetB0, EfficientNetB4, Effici
 """## Models Definition"""
 
 class BaseModel:
-  def __init__(self):
-    CHANNELS = 3
+  def __init__(self, num_classes, height, width, channels):
+    self.NUM_CLASSES = num_classes
+    self.HEIGHT = height
+    self.WIDTH = width
+    self.CHANNELS = channels
 
   # Custom CNN
   def customCNN(self):
@@ -46,113 +49,113 @@ class BaseModel:
         layers.Dropout(0.2),
         layers.Dense(64, activation="relu"),
         layers.Dropout(0.2),
-        layers.Dense(NUM_CLASSES, activation="softmax"),
+        layers.Dense(self.NUM_CLASSES, activation="softmax"),
         ])
     return base_model
 
   # EfficientNet-B0
-  def modelENB0(self, HEIGHT, WIDTH):
+  def modelENB0(self):
     base_model = EfficientNetB0(
         include_top=False,
         weights="imagenet", # transfer learning
-        classes=NUM_CLASSES,
-        input_shape=(HEIGHT, WIDTH, CHANNELS),
+        classes=self.NUM_CLASSES,
+        input_shape=(self.HEIGHT, self.WIDTH, self.CHANNELS),
         )
     return base_model
 
   # EfficientNet-B4
-  def modelENB4(self, HEIGHT, WIDTH):
+  def modelENB4(self):
     base_model = EfficientNetB4(
         include_top=False,
         weights="imagenet", # transfer learning
-        classes=NUM_CLASSES,
-        input_shape=(HEIGHT, WIDTH, CHANNELS),
+        classes=self.NUM_CLASSES,
+        input_shape=(self.HEIGHT, self.WIDTH, self.CHANNELS),
         name="efficientnetb4",
         )
     return base_model
 
   # EfficientNet-B7
-  def modelENB7(self, HEIGHT, WIDTH):
+  def modelENB7(self):
     base_model = EfficientNetB7(
         include_top=False,
         weights="imagenet", # transfer learning
-        classes=NUM_CLASSES,
-        input_shape=(HEIGHT, WIDTH, CHANNELS),
+        classes=self.NUM_CLASSES,
+        input_shape=(self.HEIGHT, self.WIDTH, self.CHANNELS),
         name="efficientnetb7",
         )
     return base_model
 
   # EfficientNetNV2-M
-  def modelENV2M(self, HEIGHT, WIDTH):
+  def modelENV2M(self):
     base_model = EfficientNetV2M(
         include_top=False,
         weights="imagenet", # transfer learning
-        classes=NUM_CLASSES,
-        input_shape=(HEIGHT, WIDTH, CHANNELS),
+        classes=self.NUM_CLASSES,
+        input_shape=(self.HEIGHT, self.WIDTH, self.CHANNELS),
         name="efficientnetv2-m",
         )
     return base_model
 
   # ResNet50V2
-  def modelRN50V2(self, HEIGHT, WIDTH):
+  def modelRN50V2(self):
     base_model = ResNet50V2(
         include_top=False,
         weights="imagenet", # transfer learning
-        classes=NUM_CLASSES,
-        input_shape=(HEIGHT, WIDTH, CHANNELS),
+        classes=self.NUM_CLASSES,
+        input_shape=(self.HEIGHT, self.WIDTH, self.CHANNELS),
         name="resnet50v2",
         )
     return base_model
 
   # ResNet152V2
-  def modelRN152V2(self, HEIGHT, WIDTH):
+  def modelRN152V2(self):
     base_model = ResNet152V2(
         include_top=False,
         weights="imagenet", # transfer learning
-        classes=NUM_CLASSES,
-        input_shape=(HEIGHT, WIDTH, CHANNELS),
+        classes=self.NUM_CLASSES,
+        input_shape=(self.HEIGHT, self.WIDTH, self.CHANNELS),
         name="resnet152v2",
         )
     return base_model
 
   # InceptionV3
-  def modelINV3(self, HEIGHT, WIDTH):
+  def modelINV3(self):
     base_model = InceptionV3(
         include_top=False,
         weights="imagenet", # transfer learning
-        classes=NUM_CLASSES,
-        input_shape=(HEIGHT, WIDTH, CHANNELS),
+        classes=self.NUM_CLASSES,
+        input_shape=(self.HEIGHT, self.WIDTH, self.CHANNELS),
         name="inception_v3",
         )
     return base_model
 
   # DenseNet121
-  def modelDN121(self, HEIGHT, WIDTH):
+  def modelDN121(self):
     base_model = DenseNet121(
         include_top=False,
         weights="imagenet", # transfer learning
-        classes=NUM_CLASSES,
-        input_shape=(HEIGHT, WIDTH, CHANNELS),
+        classes=self.NUM_CLASSES,
+        input_shape=(self.HEIGHT, self.WIDTH, self.CHANNELS),
         name="densenet121",
         )
     return base_model
 
   # DenseNet201
-  def modelDN201(self, HEIGHT, WIDTH):
+  def modelDN201(self):
     base_model = DenseNet201(
         include_top=False,
         weights="imagenet", # transfer learning
-        classes=NUM_CLASSES,
-        input_shape=(HEIGHT, WIDTH, CHANNELS),
+        classes=self.NUM_CLASSES,
+        input_shape=(self.HEIGHT, self.WIDTH, self.CHANNELS),
         name="densenet201",
         )
     return base_model
 
-  def finalLayer(self, NUM_CLASSES):
+  def finalLayer(self):
     finalLayer = models.Sequential([
         layers.GlobalAveragePooling2D(),
         layers.Dense(256, activation='relu'),
         layers.Dropout(0.3),
-        layers.Dense(NUM_CLASSES, activation='softmax')
+        layers.Dense(self.NUM_CLASSES, activation='softmax')
         ])
     return finalLayer
