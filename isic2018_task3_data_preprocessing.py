@@ -70,16 +70,15 @@ class DataBalancer:
   followed by oversampling to generate a sufficient number of images for training.
   '''
   def minBalancing(self, df):
-    # Identify smallest count per category
-    smallest_count = df.value_counts("lesion_type").min()
-    # Sample based on smallest count
-    df = df.groupby('lesion_type').sample(n=smallest_count, random_state=42)
+    target = 300
+    # Sample based on 300 records per class
+    df = df.groupby('lesion_type', group_keys=False).apply(
+        lambda x: x.sample(n=min(len(x), target), random_state=42))
 
     # Define base dataset
     base_ds = self.buildDS(df)
 
     # Perform oversampling (min 300 images per category)
-    target = 300
     df_oversampled = self.oversampler(target, df)
 
     # Define final dataset as base dataset + oversampled images
@@ -160,16 +159,16 @@ class DataPreparer:
     normalized_image = tf.cast(image/255. , tf.float32)
     return normalized_image,label
 
-  def randomAugmentation(self):
+  def randomAugmentation(self, image, label):
 
-    data_augmentation = tf.keras.Sequential([
-        layers.RandomFlip("horizontal_and_vertical"),
-        layers.RandomRotation(0.2),
-        layers.RandomTranslation(height_factor=0.1, width_factor=0.1),
-        layers.RandomShear(x_factor=0.2, y_factor=0.2),
-        ])
+    image = tf.image.random_flip_left_right(image)
+    image = tf.image.random_brightness(image, max_delta=0.1)
+    image = tf.image.random_contrast(image, lower=0.8, upper=1.2)
+    image = tf.image.random_saturation(image, lower=0.8, upper=1.2)
+    image = tf.image.random_hue(image, max_delta=0.05)
+    image = tf.clip_by_value(image, 0.0, 1.0)
 
-    return data_augmentation
+    return image
 
 """## Models Requirements Processing"""
 
