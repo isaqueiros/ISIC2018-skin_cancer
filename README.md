@@ -5,6 +5,7 @@ The challenge is divided in 3 tasks:
 - Task 1: Lesion Segmentation
 - Task 2: Lesion Attribute Detection
 - Task 3: Disease Classification
+This project currently explores solutions for Task 3 of the challenge.
 <br>
 
 ## Task 3
