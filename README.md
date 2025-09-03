@@ -5,7 +5,7 @@ The challenge is divided in 3 tasks:
 - Task 1: Lesion Segmentation
 - Task 2: Lesion Attribute Detection
 - Task 3: Disease Classification
-<br><br>
+<br>
 
 ## Task 3
 Classification of skin lesion across 7 categories: MEL (melanoma), NV (melanocytic nevus), BCC (basal cell carcinoma), AKIEC (actinic keratosis / Bowen’s disease), BKL (benign keratosis), DF (dermatofibroma), and VASC (vascular lesion).<br>
