@@ -4,7 +4,7 @@ The data and further information on the ISIC challenge can be found through the 
 The challenge is divided in 3 tasks:
 - Task 1: Lesion Segmentation
 - Task 2: Lesion Attribute Detection
-- Task 3: Disease Classification
+- Task 3: Disease Classification<br>
 This project currently explores solutions for Task 3 of the challenge.
 <br>
 
